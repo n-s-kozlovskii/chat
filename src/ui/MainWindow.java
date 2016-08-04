@@ -12,6 +12,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -61,6 +63,12 @@ public class MainWindow extends Application {
 
         btn.setOnAction(e -> client.sendData(userTextField.getText()));
 
+        EventHandler<KeyEvent> keyEventHandler = event -> {
+            if (event.getCode() == KeyCode.ENTER){
+                client.sendData(userTextField.getText());
+            }
+        };
+        primaryStage.addEventHandler(KeyEvent.KEY_PRESSED,keyEventHandler);
         primaryStage.setScene(scene);
 
         primaryStage.show();
