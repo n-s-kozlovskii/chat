@@ -28,7 +28,7 @@ public class MainWindow extends Application {
 
     public static void main(String[] args) {
         try {
-            new Thread(new Server(8000)).start();
+            new Thread(new Server("127.0.0.1",8000)).start();
             launch(args);
         } catch (IOException e) {
             e.printStackTrace();
