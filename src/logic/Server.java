@@ -10,24 +10,23 @@ import java.net.SocketTimeoutException;
  */
 public class Server implements  Runnable {
     private ServerSocket serverSocket;
+    private String serverName;
+    private int port;
 
-    public Server(int port) throws IOException {
+    public Server(String serverName,int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        serverSocket.setSoTimeout(10000);
+        this.serverName = serverName;
+        this.port = port;
     }
 
     @Override
     public void run() {
         while (true) {
             try {
-                System.out.println("Waiting for client on port " +
-                        serverSocket.getLocalPort() + "...");
                 Socket server = serverSocket.accept();
-                DataInputStream in =
-                        new DataInputStream(server.getInputStream());
-                System.out.println("принято на вход " + in.readUTF());
-                DataOutputStream out =
-                        new DataOutputStream(server.getOutputStream());
+                OutputStream outputStream = server.getOutputStream();
+                InputStream inputStream = server.getInputStream();
+
                 server.close();
             } catch (SocketTimeoutException s) {
                 System.out.println("Socket timed out!");
@@ -36,6 +35,24 @@ public class Server implements  Runnable {
                 e.printStackTrace();
                 break;
             }
+        }
+    }
+
+    public void sendData(String data)
+    {
+        try
+        {
+            Socket client = new Socket(serverName, port);
+            OutputStream outToServer = client.getOutputStream();
+            DataOutputStream out = new DataOutputStream(outToServer);
+            out.writeUTF(data);
+            InputStream inFromServer = client.getInputStream();
+            DataInputStream in =
+                    new DataInputStream(inFromServer);
+            client.close();
+        }catch(IOException e)
+        {
+            e.printStackTrace();
         }
     }
 }
