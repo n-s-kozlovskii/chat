@@ -81,9 +81,8 @@ public class Server {
             try {
                 name = in.readLine();
                 synchronized(connections) {
-                    Iterator<Connection> iter = connections.iterator();
-                    while(iter.hasNext()) {
-                        iter.next().out.println(name + " cames now");
+                    for (Connection c: connections) {
+                        c.out.println(name + " cames now");
                     }
                 }
 
@@ -94,18 +93,17 @@ public class Server {
                         break;
                     }
                     synchronized(connections) {
-                        Iterator<Connection> iter = connections.iterator();
-                        while(iter.hasNext()) {
-                            iter.next().out.println(name + ": " + text);
+                        for (Connection c: connections) {
+                            c.out.println(name + ": " + text);
                         }
                     }
                 }
 
                 synchronized(connections) {
-                    Iterator<Connection> iter = connections.iterator();
-                    while(iter.hasNext()) {
-                        iter.next().out.println(name + " has left");
+                    for (Connection c: connections){
+                        c.out.println(name + " has left");
                     }
+
                 }
             } catch (IOException e) {
                 System.out.print("2");
