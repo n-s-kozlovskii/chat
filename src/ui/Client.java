@@ -1,13 +1,12 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -78,9 +77,11 @@ public class Client extends Application{
 
 
     private void mainWindow(Stage primaryStage, String name) {
-        primaryStage.setTitle("Client: " + name);
+        ObservableList<models.Message> messages = FXCollections.observableArrayList();
+        ScrollPane pane = new ScrollPane();
+        GridPane pane1 = new GridPane();
 
-        Scene scene = new Scene(new Label("hi"), 100, 100);
+        Scene scene = new Scene(pane, 100, 100);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

@@ -1,7 +1,7 @@
-package con_main;
+package console.main;
 
-import con_client.Client;
-import con_server.Server;
+import console.client.Client;
+import console.server.Server;
 
 import java.util.Scanner;
 

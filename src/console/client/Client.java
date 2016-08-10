@@ -1,4 +1,4 @@
-package con_client;
+package console.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
