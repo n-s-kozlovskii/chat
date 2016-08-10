@@ -1,7 +1,9 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import models.Message;
 
 /**
  * Created by nek on 07.08.16.
@@ -54,6 +57,10 @@ public class Client extends Application{
         primaryStage.setScene(scene);
         primaryStage.show();
 
+        BooleanBinding binding = textField.textProperty().isEmpty()
+                .or(passwordField.textProperty().isEmpty());
+        btn.disableProperty().bind(binding);
+
         btn.setOnAction(e ->{
             if (success(textField.getText(), passwordField.getText())) {
                 mainWindow(primaryStage,textField.getText());
@@ -78,10 +85,18 @@ public class Client extends Application{
 
     private void mainWindow(Stage primaryStage, String name) {
         ObservableList<models.Message> messages = FXCollections.observableArrayList();
-        ScrollPane pane = new ScrollPane();
         GridPane pane1 = new GridPane();
+        messages.addListener(new ListChangeListener<Message>() {
+            @Override
+            public void onChanged(Change<? extends Message> c) {
+
+            }
+        });
+        ScrollPane pane = new ScrollPane();
+
 
         Scene scene = new Scene(pane, 100, 100);
+
         primaryStage.setScene(scene);
         primaryStage.show();
     }
