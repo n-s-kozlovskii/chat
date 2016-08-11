@@ -5,10 +5,13 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -36,8 +39,8 @@ public class Client extends Application{
         grid.setPadding(new Insets(5));
         grid.setAlignment(Pos.CENTER);
 
-        TextField textField = new TextField();
-        Label userNameLable = new Label("Имя");
+        TextField nickNameField = new TextField();
+        Label userNameLabel = new Label("Имя");
 
         PasswordField passwordField = new PasswordField();
         Label passwordLabel = new Label("Password");
@@ -48,8 +51,8 @@ public class Client extends Application{
         hbBtn.getChildren().add(btn);
 
 
-        grid.add(userNameLable, 0, 0);
-        grid.add(textField, 1, 0);
+        grid.add(userNameLabel, 0, 0);
+        grid.add(nickNameField, 1, 0);
         grid.add(passwordLabel, 0, 1);
         grid.add(passwordField, 1,1);
         grid.add(hbBtn, 1, 2);
@@ -57,17 +60,33 @@ public class Client extends Application{
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        BooleanBinding binding = textField.textProperty().isEmpty()
+        BooleanBinding binding = nickNameField.textProperty().isEmpty()
                 .or(passwordField.textProperty().isEmpty());
         btn.disableProperty().bind(binding);
 
-        btn.setOnAction(e ->{
-            if (success(textField.getText(), passwordField.getText())) {
-                mainWindow(primaryStage,textField.getText());
-            } else {
-                failWindow (primaryStage);
+        btn.setOnAction(e ->
+            logIn (nickNameField.getText(), passwordField.getText(), primaryStage)
+        );
+
+        EventHandler<KeyEvent> enterPressed = event -> {
+            if (event.getCode() == KeyCode.ENTER
+                  && !nickNameField.getText().isEmpty()
+                    && !passwordField.getText().isEmpty()
+                    ) {
+                logIn(nickNameField.getText(), passwordField.getText(), primaryStage);
             }
-        });
+        };
+
+
+        primaryStage.addEventHandler(KeyEvent.KEY_PRESSED,enterPressed);
+    }
+
+    private void logIn (String nickname, String password, Stage stage){
+        if (success(nickname, password)) {
+            mainWindow(stage,nickname);
+        } else {
+            failWindow (stage);
+        }
     }
 
     private void failWindow(Stage primaryStage) {
