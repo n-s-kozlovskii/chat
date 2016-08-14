@@ -103,21 +103,7 @@ public class Client extends Application{
 
 
     private void mainWindow(Stage primaryStage, String name) {
-        ObservableList<models.Message> messages = FXCollections.observableArrayList();
-        GridPane pane1 = new GridPane();
-        messages.addListener(new ListChangeListener<Message>() {
-            @Override
-            public void onChanged(Change<? extends Message> c) {
 
-            }
-        });
-        ScrollPane pane = new ScrollPane();
-
-
-        Scene scene = new Scene(pane, 100, 100);
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
 

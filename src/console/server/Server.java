@@ -22,7 +22,9 @@ public class Server {
         try {
             serverSocket = new ServerSocket(8000);
             while (true){
+                System.out.print("before\n");
                 Socket socket = serverSocket.accept();
+                System.out.print("after\n");
                 if (!socket.isClosed()) {
                     Connection con = new Connection(socket);
                     connections.add(con);
@@ -93,6 +95,7 @@ public class Server {
                         break;
                     }
                     synchronized(connections) {
+                        System.out.println(name + ": " + text);
                         for (Connection c: connections) {
                             c.out.println(name + ": " + text);
                         }
