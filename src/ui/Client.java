@@ -103,7 +103,18 @@ public class Client extends Application{
 
 
     private void mainWindow(Stage primaryStage, String name) {
+        TextField inputText = new TextField();
+        inputText.setPrefWidth(250);
+        Button sendBtn = new Button("send");
+        HBox container = new HBox();
+        container.setAlignment(Pos.BOTTOM_CENTER);
+        container.getChildren().add(inputText);
+        container.getChildren().add(sendBtn);
 
+        Scene scene = new Scene(container, 300, 300 );
+        primaryStage.setTitle(primaryStage.getTitle()+": "+name);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
 

@@ -4,7 +4,6 @@
     <list default="true" id="2be7c35d-04f6-4915-892b-cff7621f8d01" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/messeger/ui/Client.class" afterPath="$PROJECT_DIR$/out/production/messeger/ui/Client.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/console/server/Server.java" afterPath="$PROJECT_DIR$/src/console/server/Server.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ui/Client.java" afterPath="$PROJECT_DIR$/src/ui/Client.java" />
     </list>
     <list id="52e3b355-0f5e-42e6-951d-5260ed6e2791" name="Rejected commit: Default" comment="UI building startrf" />
@@ -41,7 +40,7 @@
         <entry file="file://$PROJECT_DIR$/src/ui/Client.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="365">
-              <caret line="105" column="8" selection-start-line="105" selection-start-column="8" selection-end-line="105" selection-end-column="8" />
+              <caret line="114" column="63" selection-start-line="114" selection-start-column="63" selection-end-line="114" selection-end-column="63" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#692#693#0" expanded="true" />
@@ -760,7 +759,14 @@
       <option name="project" value="LOCAL" />
       <updated>1470912338270</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="initial actually">
+      <created>1471189057426</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1471189057426</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TodoView">
@@ -862,7 +868,8 @@
     <MESSAGE value="some refactor" />
     <MESSAGE value="add button disabling" />
     <MESSAGE value="something" />
-    <option name="LAST_COMMIT_MESSAGE" value="something" />
+    <MESSAGE value="initial actually" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial actually" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1272,7 +1279,7 @@
     <entry file="file://$PROJECT_DIR$/src/ui/Client.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="365">
-          <caret line="105" column="8" selection-start-line="105" selection-start-column="8" selection-end-line="105" selection-end-column="8" />
+          <caret line="114" column="63" selection-start-line="114" selection-start-column="63" selection-end-line="114" selection-end-column="63" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#692#693#0" expanded="true" />
