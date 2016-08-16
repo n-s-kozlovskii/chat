@@ -22,14 +22,11 @@ public class Server {
         try {
             serverSocket = new ServerSocket(8000);
             while (true){
-                System.out.print("before\n");
                 Socket socket = serverSocket.accept();
-                System.out.print("after\n");
-                if (!socket.isClosed()) {
-                    Connection con = new Connection(socket);
-                    connections.add(con);
-                    con.start();
-                }
+                System.out.println(socket);
+                Connection con = new Connection(socket);
+                connections.add(con);
+                con.start();
             }
 
         } catch (IOException e) {
@@ -91,6 +88,7 @@ public class Server {
                 String text;
                 while (true) {
                     text = in.readLine();
+                    System.out.println(text);
                     if (text.equals("exit")) {
                         break;
                     }

@@ -1,10 +1,8 @@
 package ui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,12 +13,17 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import models.Message;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 /**
  * Created by nek on 07.08.16.
  */
 public class Client extends Application{
+    private Connection c = new Connection();
 
     public static void main(String[] args) {
         launch(args);
@@ -110,12 +113,55 @@ public class Client extends Application{
         container.setAlignment(Pos.BOTTOM_CENTER);
         container.getChildren().add(inputText);
         container.getChildren().add(sendBtn);
+        sendBtn.setOnAction(event -> {
+        });
 
         Scene scene = new Scene(container, 300, 300 );
+        primaryStage.setOnCloseRequest(event -> {
+            c.setStopped();
+            primaryStage.close();
+        });
+
         primaryStage.setTitle(primaryStage.getTitle()+": "+name);
         primaryStage.setScene(scene);
         primaryStage.show();
+        Platform.runLater(c);
     }
 
 
+    private class Connection extends Thread{
+        Socket socket;
+        BufferedReader in;
+        PrintWriter out;
+        boolean stopped = false;
+        boolean sendIt = false;
+
+
+        private void setStopped () {
+            stopped = true;
+        }
+
+        @Override
+        public void run() {
+            this.setDaemon(true);
+            try {
+                socket = new Socket("127.0.0.1", 8000);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream());
+
+                while (!stopped) {
+
+                }
+            } catch (Exception e) {
+                System.out.println ("exit");
+            }
+
+        }
+
+        private void send() {
+            sendIt = true;
+        }
+
+
+    }
 }
