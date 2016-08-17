@@ -113,9 +113,6 @@ public class Client extends Application{
         container.setAlignment(Pos.BOTTOM_CENTER);
         container.getChildren().add(inputText);
         container.getChildren().add(sendBtn);
-        sendBtn.setOnAction(event -> {
-        });
-
         Scene scene = new Scene(container, 300, 300 );
         primaryStage.setOnCloseRequest(event -> {
             c.setStopped();
