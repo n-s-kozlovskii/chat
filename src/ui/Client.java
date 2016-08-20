@@ -3,6 +3,12 @@ package ui;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -23,7 +30,6 @@ import java.net.Socket;
  * Created by nek on 07.08.16.
  */
 public class Client extends Application{
-    private Connection c = new Connection();
 
     public static void main(String[] args) {
         launch(args);
@@ -32,7 +38,7 @@ public class Client extends Application{
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Client");
-        logInWin(primaryStage);
+        mainWindow(primaryStage, "name");
     }
 
     private void logInWin (Stage primaryStage) throws Exception{
@@ -106,37 +112,96 @@ public class Client extends Application{
 
 
     private void mainWindow(Stage primaryStage, String name) {
+        ObservableList<String> messages = FXCollections.observableArrayList();
+
+        Socket socket = null;
+        try {
+            socket = new Socket("localhost", 8000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println( socket == null);
+        Service<Void> sendService = getSendService(socket, messages);
+        //Service<String> getService = getGetService(socket);
+
+        messages.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                System.out.println( "list changed");
+                sendService.restart();
+            }
+        });
+
         TextField inputText = new TextField();
         inputText.setPrefWidth(250);
         Button sendBtn = new Button("send");
+        sendBtn.setOnAction(event -> {
+            messages.add(inputText.getText());
+            inputText.clear();
+        });
         HBox container = new HBox();
         container.setAlignment(Pos.BOTTOM_CENTER);
         container.getChildren().add(inputText);
         container.getChildren().add(sendBtn);
         Scene scene = new Scene(container, 300, 300 );
-        primaryStage.setOnCloseRequest(event -> {
-            c.setStopped();
-            primaryStage.close();
-        });
 
         primaryStage.setTitle(primaryStage.getTitle()+": "+name);
         primaryStage.setScene(scene);
         primaryStage.show();
-        Platform.runLater(c);
     }
 
+    Service<Void> getSendService(Socket socket, ObservableList<String > list){
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        PrintWriter finalOut = out;
+        return new Service<Void>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        System.out.println("from sendService: "+list.get(list.size()-1));
+                        finalOut.println(list.get(list.size()-1));
+                        finalOut.close();
+                        return null;
+                    }
+                };
+            }
+        };
+    }
+
+    Service<String> getGetService(Socket socket){
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        BufferedReader finalIn = in;
+        return new Service<String>() {
+            @Override
+            protected Task<String> createTask() {
+                return new Task<String>() {
+                    @Override
+                    protected String call() throws Exception {
+                        String res = finalIn.readLine();
+                        finalIn.close();
+                        return res;
+                    }
+                };
+            }
+        };
+    }
 
     private class Connection extends Thread{
         Socket socket;
         BufferedReader in;
         PrintWriter out;
         boolean stopped = false;
-        boolean sendIt = false;
-
-
-        private void setStopped () {
-            stopped = true;
-        }
 
         @Override
         public void run() {
@@ -149,16 +214,21 @@ public class Client extends Application{
                 while (!stopped) {
 
                 }
+
             } catch (Exception e) {
                 System.out.println ("exit");
+            } finally {
+                try {
+                    socket.close();
+                    out.close();
+                    in.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
 
         }
-
-        private void send() {
-            sendIt = true;
-        }
-
 
     }
 }

@@ -79,6 +79,7 @@ public class Server {
         public void run() {
             try {
                 name = in.readLine();
+                System.out.println(name);
                 synchronized(connections) {
                     for (Connection c: connections) {
                         c.out.println(name + " cames now");
