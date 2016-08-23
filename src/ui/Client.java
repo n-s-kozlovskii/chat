@@ -1,14 +1,14 @@
 package ui;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,6 +18,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -30,6 +32,7 @@ import java.net.Socket;
  * Created by nek on 07.08.16.
  */
 public class Client extends Application{
+    private EventHandler<KeyEvent> enterPressed;
 
     public static void main(String[] args) {
         launch(args);
@@ -38,7 +41,7 @@ public class Client extends Application{
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Client");
-        mainWindow(primaryStage, "name");
+        logInWin(primaryStage);
     }
 
     private void logInWin (Stage primaryStage) throws Exception{
@@ -77,17 +80,11 @@ public class Client extends Application{
             logIn (nickNameField.getText(), passwordField.getText(), primaryStage)
         );
 
-        EventHandler<KeyEvent> enterPressed = event -> {
-            if (event.getCode() == KeyCode.ENTER
-                  && !nickNameField.getText().isEmpty()
-                    && !passwordField.getText().isEmpty()
-                    ) {
-                logIn(nickNameField.getText(), passwordField.getText(), primaryStage);
-            }
+        enterPressed = event -> {
+            btn.fire();
         };
 
-
-        primaryStage.addEventHandler(KeyEvent.KEY_PRESSED,enterPressed);
+        scene.addEventHandler(KeyEvent.KEY_PRESSED,enterPressed);
     }
 
     private void logIn (String nickname, String password, Stage stage){
@@ -120,9 +117,18 @@ public class Client extends Application{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println( socket == null);
         Service<Void> sendService = getSendService(socket, messages);
-        //Service<String> getService = getGetService(socket);
+
+        Service<Void> getService = getGetService(socket);
+        getService.start();
+
+        StringProperty stringProperty = new SimpleStringProperty();
+        stringProperty.bind(getService.messageProperty());
+        ObservableList inMessages = FXCollections.observableArrayList();
+        stringProperty.addListener((observable, oldValue, newValue) -> {
+            inMessages.add(newValue);
+            System.out.println(inMessages);
+        });
 
         messages.addListener(new ListChangeListener<String>() {
             @Override
@@ -139,15 +145,33 @@ public class Client extends Application{
             messages.add(inputText.getText());
             inputText.clear();
         });
-        HBox container = new HBox();
-        container.setAlignment(Pos.BOTTOM_CENTER);
-        container.getChildren().add(inputText);
-        container.getChildren().add(sendBtn);
-        Scene scene = new Scene(container, 300, 300 );
+        EventHandler<KeyEvent> enterPressed = event -> {
+            sendBtn.fire();
+        };
 
+        HBox inputArea = new HBox();
+        inputArea.setAlignment(Pos.BOTTOM_CENTER);
+        inputArea.getChildren().add(inputText);
+        inputArea.getChildren().add(sendBtn);
+
+        ScrollPane scrollPane = new ScrollPane();
+        VBox messagesBox = new VBox();
+        scrollPane.setContent(messagesBox);
+        scrollPane.setPrefWidth(290);
+
+        Pane window = new Pane();
+        window.getChildren().add(scrollPane);
+        window.getChildren().add(inputArea);
+        Scene scene = new Scene(window, 300, 300 );
         primaryStage.setTitle(primaryStage.getTitle()+": "+name);
         primaryStage.setScene(scene);
         primaryStage.show();
+//        primaryStage.setOnCloseRequest(event -> {
+//            getService.cancel();
+//        });
+
+        scene.addEventHandler(KeyEvent.KEY_PRESSED,enterPressed);
+
     }
 
     Service<Void> getSendService(Socket socket, ObservableList<String > list){
@@ -174,7 +198,7 @@ public class Client extends Application{
         };
     }
 
-    Service<String> getGetService(Socket socket){
+    Service<Void> getGetService(Socket socket){
         BufferedReader in = null;
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -182,15 +206,20 @@ public class Client extends Application{
             e.printStackTrace();
         }
         BufferedReader finalIn = in;
-        return new Service<String>() {
+        return new Service<Void>() {
             @Override
-            protected Task<String> createTask() {
-                return new Task<String>() {
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
                     @Override
-                    protected String call() throws Exception {
-                        String res = finalIn.readLine();
+                    protected Void call() throws Exception {
+                        while (!isCancelled()) {
+                            String res = finalIn.readLine();
+                            updateMessage(res);
+                            System.out.println(res);
+                        }
+                        System.out.println("getService canceled");
                         finalIn.close();
-                        return res;
+                        return null;
                     }
                 };
             }
