@@ -28,9 +28,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-/**
- * Created by nek on 07.08.16.
- */
+
 public class Client extends Application{
     private EventHandler<KeyEvent> enterPressed;
 
@@ -175,22 +173,19 @@ public class Client extends Application{
     }
 
     Service<Void> getSendService(Socket socket, ObservableList<String > list){
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter(socket.getOutputStream(), true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        PrintWriter finalOut = out;
         return new Service<Void>() {
             @Override
             protected Task<Void> createTask() {
                 return new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
-                        System.out.println("from sendService: "+list.get(list.size()-1));
-                        finalOut.println(list.get(list.size()-1));
-                        finalOut.close();
+                        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true))
+                        {
+                            System.out.println("from sendService: "+list.get(list.size()-1));
+                            out.println(list.get(list.size()-1));
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage() + " in sendService");
+                        }
                         return null;
                     }
                 };
@@ -199,26 +194,23 @@ public class Client extends Application{
     }
 
     Service<Void> getGetService(Socket socket){
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        BufferedReader finalIn = in;
         return new Service<Void>() {
             @Override
             protected Task<Void> createTask() {
                 return new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
-                        while (!isCancelled()) {
-                            String res = finalIn.readLine();
-                            updateMessage(res);
-                            System.out.println(res);
+                        try( BufferedReader finalIn = new BufferedReader
+                                (new InputStreamReader(socket.getInputStream()))) {
+                            while (!isCancelled()) {
+                                String res = finalIn.readLine();
+                                updateMessage(res);
+                                System.out.println(res);
+                            }
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage() + " in getService");
                         }
                         System.out.println("getService canceled");
-                        finalIn.close();
                         return null;
                     }
                 };
