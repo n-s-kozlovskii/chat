@@ -110,29 +110,33 @@ public class Client extends Application{
         ObservableList<String> messages = FXCollections.observableArrayList();
 
         Socket socket = null;
+        PrintWriter out = null;
         try {
             socket = new Socket("localhost", 8000);
+            out = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Service<Void> sendService = getSendService(socket, messages);
 
-        Service<Void> getService = getGetService(socket);
-        getService.start();
+        //Service<Void> getService = getGetService(socket);
+        //getService.start();
 
         StringProperty stringProperty = new SimpleStringProperty();
-        stringProperty.bind(getService.messageProperty());
+        //stringProperty.bind(getService.messageProperty());
         ObservableList inMessages = FXCollections.observableArrayList();
         stringProperty.addListener((observable, oldValue, newValue) -> {
             inMessages.add(newValue);
             System.out.println(inMessages);
         });
 
+        PrintWriter finOut = out;
         messages.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
                 System.out.println( "list changed");
-                sendService.restart();
+                if (finOut != null ) {
+                    finOut.println(messages.get(messages.size()-1));
+                }
             }
         });
 
@@ -160,38 +164,27 @@ public class Client extends Application{
         Pane window = new Pane();
         window.getChildren().add(scrollPane);
         window.getChildren().add(inputArea);
+
         Scene scene = new Scene(window, 300, 300 );
         primaryStage.setTitle(primaryStage.getTitle()+": "+name);
         primaryStage.setScene(scene);
         primaryStage.show();
-//        primaryStage.setOnCloseRequest(event -> {
-//            getService.cancel();
-//        });
+
+        Socket finalSocket = socket;
+        primaryStage.setOnCloseRequest(event -> {
+            finOut.println("exit");
+            finOut.close();
+            try {
+                finalSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         scene.addEventHandler(KeyEvent.KEY_PRESSED,enterPressed);
 
     }
-
-    Service<Void> getSendService(Socket socket, ObservableList<String > list){
-        return new Service<Void>() {
-            @Override
-            protected Task<Void> createTask() {
-                return new Task<Void>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true))
-                        {
-                            System.out.println("from sendService: "+list.get(list.size()-1));
-                            out.println(list.get(list.size()-1));
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage() + " in sendService");
-                        }
-                        return null;
-                    }
-                };
-            }
-        };
-    }
+    
 
     Service<Void> getGetService(Socket socket){
         return new Service<Void>() {
