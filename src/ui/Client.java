@@ -14,7 +14,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -110,29 +109,42 @@ public class Client extends Application{
         ObservableList<String> messages = FXCollections.observableArrayList();
 
         Socket socket = null;
+        PrintWriter out = null;
+        BufferedReader in  = null;
         try {
             socket = new Socket("localhost", 8000);
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Service<Void> sendService = getSendService(socket, messages);
 
-        Service<Void> getService = getGetService(socket);
+        //Effective final vars
+        Socket finalSocket = socket;
+        PrintWriter finalOut = out;
+        BufferedReader finalIn = in;
+
+        finalOut.println(name);
+
+        Service<Void> getService = getGetService(finalIn);
         getService.start();
 
         StringProperty stringProperty = new SimpleStringProperty();
         stringProperty.bind(getService.messageProperty());
-        ObservableList inMessages = FXCollections.observableArrayList();
+        ObservableList<String> inMessages = FXCollections.observableArrayList();
         stringProperty.addListener((observable, oldValue, newValue) -> {
             inMessages.add(newValue);
             System.out.println(inMessages);
         });
 
+
         messages.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> c) {
                 System.out.println( "list changed");
-                sendService.restart();
+                if (finalOut != null ) {
+                    finalOut.println(messages.get(messages.size()-1));
+                }
             }
         });
 
@@ -156,60 +168,61 @@ public class Client extends Application{
         VBox messagesBox = new VBox();
         scrollPane.setContent(messagesBox);
         scrollPane.setPrefWidth(290);
+        scrollPane.setMinHeight(270);
 
-        Pane window = new Pane();
+        VBox window = new VBox();
         window.getChildren().add(scrollPane);
         window.getChildren().add(inputArea);
+
+
+        messages.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                messagesBox.getChildren().add(new Label(messages.get(messages.size()-1)));
+            }
+        });
+
+        inMessages.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                messagesBox.getChildren().add(new Label(inMessages.get(inMessages.size()-1)));
+            }
+        });
+
         Scene scene = new Scene(window, 300, 300 );
         primaryStage.setTitle(primaryStage.getTitle()+": "+name);
         primaryStage.setScene(scene);
         primaryStage.show();
-//        primaryStage.setOnCloseRequest(event -> {
-//            getService.cancel();
-//        });
+
+
+        primaryStage.setOnCloseRequest(event -> {
+            finalOut.println("exit");
+            finalOut.close();
+            getService.cancel();
+            try {
+                finalSocket.close();
+                finalIn.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         scene.addEventHandler(KeyEvent.KEY_PRESSED,enterPressed);
 
     }
 
-    Service<Void> getSendService(Socket socket, ObservableList<String > list){
-        return new Service<Void>() {
-            @Override
-            protected Task<Void> createTask() {
-                return new Task<Void>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true))
-                        {
-                            System.out.println("from sendService: "+list.get(list.size()-1));
-                            out.println(list.get(list.size()-1));
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage() + " in sendService");
-                        }
-                        return null;
-                    }
-                };
-            }
-        };
-    }
 
-    Service<Void> getGetService(Socket socket){
+    Service<Void> getGetService(BufferedReader in){
         return new Service<Void>() {
             @Override
             protected Task<Void> createTask() {
                 return new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
-                        try( BufferedReader finalIn = new BufferedReader
-                                (new InputStreamReader(socket.getInputStream()))) {
                             while (!isCancelled()) {
-                                String res = finalIn.readLine();
+                                String res = in.readLine();
                                 updateMessage(res);
-                                System.out.println(res);
                             }
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage() + " in getService");
-                        }
                         System.out.println("getService canceled");
                         return null;
                     }
