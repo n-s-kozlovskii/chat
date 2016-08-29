@@ -11,14 +11,17 @@ import java.util.*;
 /**
  * Created by nek on 06.08.16.
  */
-public class Server {
+public class Server extends Thread {
     private ServerSocket serverSocket;
     private List<Connection> connections;
 
     public Server(){
-
         connections = Collections.synchronizedList(new LinkedList<>());
 
+    }
+
+    @Override
+    public void run() {
         try {
             serverSocket = new ServerSocket(8000);
             while (true){

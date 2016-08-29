@@ -1,5 +1,6 @@
 package ui;
 
+import console.server.Server;
 import javafx.application.Application;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
@@ -59,12 +60,15 @@ public class Client extends Application{
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(btn);
 
+        CheckBox checkBox = new CheckBox("Run server");
+
 
         grid.add(userNameLabel, 0, 0);
         grid.add(nickNameField, 1, 0);
         grid.add(passwordLabel, 0, 1);
         grid.add(passwordField, 1,1);
         grid.add(hbBtn, 1, 2);
+        grid.add(checkBox, 0,2);
         Scene scene = new Scene(grid, 300, 275);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -73,8 +77,14 @@ public class Client extends Application{
                 .or(passwordField.textProperty().isEmpty());
         btn.disableProperty().bind(binding);
 
-        btn.setOnAction(e ->
-            logIn (nickNameField.getText(), passwordField.getText(), primaryStage)
+
+
+        btn.setOnAction(e -> {
+                    if (checkBox.isSelected()) {
+                        new Server().start();
+                    }
+                    logIn (nickNameField.getText(), passwordField.getText(), primaryStage);
+                }
         );
 
         enterPressed = event -> {
