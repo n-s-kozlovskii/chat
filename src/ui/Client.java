@@ -124,12 +124,14 @@ public class Client extends Application{
         PrintWriter finalOut = out;
         BufferedReader finalIn = in;
 
+        finalOut.println(name);
+
         Service<Void> getService = getGetService(finalIn);
         getService.start();
 
         StringProperty stringProperty = new SimpleStringProperty();
         stringProperty.bind(getService.messageProperty());
-        ObservableList inMessages = FXCollections.observableArrayList();
+        ObservableList<String> inMessages = FXCollections.observableArrayList();
         stringProperty.addListener((observable, oldValue, newValue) -> {
             inMessages.add(newValue);
             System.out.println(inMessages);
@@ -166,10 +168,26 @@ public class Client extends Application{
         VBox messagesBox = new VBox();
         scrollPane.setContent(messagesBox);
         scrollPane.setPrefWidth(290);
+        scrollPane.setMinHeight(270);
 
-        Pane window = new Pane();
+        VBox window = new VBox();
         window.getChildren().add(scrollPane);
         window.getChildren().add(inputArea);
+
+
+        messages.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                messagesBox.getChildren().add(new Label(messages.get(messages.size()-1)));
+            }
+        });
+
+        inMessages.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> c) {
+                messagesBox.getChildren().add(new Label(inMessages.get(inMessages.size()-1)));
+            }
+        });
 
         Scene scene = new Scene(window, 300, 300 );
         primaryStage.setTitle(primaryStage.getTitle()+": "+name);
@@ -204,7 +222,6 @@ public class Client extends Application{
                             while (!isCancelled()) {
                                 String res = in.readLine();
                                 updateMessage(res);
-
                             }
                         System.out.println("getService canceled");
                         return null;
